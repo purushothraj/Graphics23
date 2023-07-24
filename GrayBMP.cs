@@ -79,6 +79,31 @@ class GrayBMP {
    public void Dirty () 
       => Dirty (0, 0, Width - 1, Height - 1);
 
+   public void CreatePoints (int radius) {
+      double Angstep = 0.017453292519;
+      for(double i = 0,j=0; i < 360; i++,j+=Angstep) {
+         mEndCapPoints.Add (new Point2((radius * Math.Cos (j)),( radius * Math.Sin (j))));
+      }
+   }
+   public void DrawThickLine (int x0, int y0, int x1, int y1, int width, int color) {
+      List<int> Points= new List<int> ();
+      int dx = x1 - x0, dy = y1 - y0, w = width / 2,i=0;
+      int SAI =(int) (Atan2 (dy, dx)* 57.295779513082 +270)%360;
+      for(; i<4; i++) {
+         Points.Add (x0 +(int) mEndCapPoints[SAI].X);Points.Add (y0 + (int) mEndCapPoints[SAI].Y);
+         SAI -= ang[i]; if (SAI < 0) SAI += 360; 
+      }
+      for(; i<8; i++) {
+         Points.Add (x1 + (int) mEndCapPoints[SAI].X);Points.Add (y1 + (int) mEndCapPoints[SAI].Y);
+         SAI -= ang[i]; if (SAI < 0) SAI += 360;
+      }
+      mPF.Reset ();
+      for (i=0; i<14; i+=2) {
+         mPF.AddLine (Points[i],Points[i + 1],Points[i + 2],Points[i + 3]);
+      }
+      mPF.AddLine (Points[i],Points[i + 1],Points[0],Points[1]);
+      mPF.Fill (this, 0);
+   }
    /// <summary>Draws a line between the given endpoints, with the given shade of gray</summary>
    public void DrawLine (int x1, int y1, int x2, int y2, int gray) {
       if (y1 == y2) { DrawHorizontalLine (x1, x2, y1, gray); return; }
@@ -166,6 +191,9 @@ class GrayBMP {
    readonly nint mBuffer;
    int mX0, mY0, mX1, mY1;    // The 'dirty rectangle'
    int mcLocks;               // Number of unmatched Begin() calls
+   List<Point2> mEndCapPoints = new List<Point2> ();
+   int[] ang = { 30, 60, 60, 30, 30, 60, 60, 30 };
+   PolyFillFast mPF = new ();
    #endregion
 }
 #endregion
