@@ -6,6 +6,7 @@ using System.Windows.Controls;
 using System.Reflection;
 using System.IO;
 using System.Windows.Threading;
+using System.Drawing;
 
 namespace GrayBMP;
 
@@ -51,10 +52,13 @@ class PolyFillWin : Window {
          mPF.AddLine (x0, y0, x1, y1);
       }
       mPF.Fill (mBmp, 255);
-
+      if (mScale > 1) mBmp.CreatePoints (mScale / 2);
       foreach (var line in mDwg.Lines) {
          var ((x0, y0), (x1, y1)) = (line.A.Round (), line.B.Round ());
-         mBmp.DrawLine (x0, y0, x1, y1, 0);
+         if (mScale == 1) mBmp.DrawLine (x0, y0, x1, y1, 0);
+         else { 
+            mBmp.DrawThickLine (x0, y0, x1, y1, mScale, 0);
+         }
       }
       mBmp.End ();
    }
